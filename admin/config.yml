@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: Ahmad-001A/work8
+  repo: Ahmad-001A/work755
   branch: main
 
 media_folder: "assets"

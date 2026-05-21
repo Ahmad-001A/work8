@@ -271,7 +271,7 @@
     const SUPABASE_KEY = "sb_publishable_Y0nkyjzNTiikKczdWbEBg_dJy1O043MTA0ODcyNDMxNzk5ODM0NjQ0";
     // ===========================================
 
-    // Создаем подключение ОДИН раз и правильно
+    // Инициализируем клиент supabase ОДИН раз
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let timetable = {}; 
@@ -282,29 +282,25 @@
     let currentRole = 'student'; 
     let isRegisterMode = false;
     let currentWeekIndex = 0;
+    let teacherSelectedStudent = ""; 
 
     // Загрузка глобальной конфигурации из онлайн-БД
     async function loadOnlineConfig() {
-        // 1. Получаем расписание
         let { data: config } = await supabase.from('diary_config').select('timetable').single();
         if (config) timetable = config.timetable;
 
-        // 2. Получаем пользователей
         let { data: users } = await supabase.from('diary_users').select('*');
         if (users) allUsers = users;
 
-        // 3. Получаем оценки
         let { data: grades } = await supabase.from('diary_grades').select('*');
         globalGrades = {};
         if (grades) {
             grades.forEach(g => { globalGrades[g.lesson_key] = g.grades_data; });
         }
 
-        // 4. Получаем замечания
         let { data: remarks } = await supabase.from('diary_remarks').select('*');
         if (remarks) allRemarks = remarks;
 
-        // Настройка селектора предметов
         const uniqueSubjects = ["ФИЗИКА ОБЩАЯ","АЛГЕБРА","БИОЛОГИЯ","ФИЗРА","РУСС-ЯЗ","ОБЖ","ИКТ","ХИМИЯ","ГЕОГРАФИЯ","ИСТОРИЯ","ЛИТЕРАТУРА"];
         const subSelect = document.getElementById('authSubject');
         subSelect.innerHTML = '';
@@ -533,64 +529,142 @@
         });
     }
 
-    function changeWeek(direction) { let newIdx = currentWeekIndex + direction; if(newIdx >= 0 && newIdx < academicWeeks.length) { currentWeekIndex = newIdx; renderWeekDiary(); } }
-    function handleStudentSelectChange(sel, inpId, key) { const val = sel.value; const inp = document.getElementById(inpId); if (!val) { inp.value = ""; inp.disabled = true; inp.removeAttribute('data-student'); return; } inp.disabled = false; inp.setAttribute('data-student', val); inp.value = (globalGrades[key] || {})[val] || ""; }
-    function getBadgeColorClass(grade) { let g = parseInt(grade); if(g >= 9) return 'badge-high'; if(g >= 7) return 'badge-good'; if(g >= 5) return 'badge-mid'; return 'badge-low'; }
-
-    function renderWeekDiary() {
-        const week = academicWeeks[currentWeekIndex];
-        document.getElementById('weekRangeTitle').innerText = `Неделя: ${week.startStr} — ${week.endStr}`;
-        const container = document.getElementById('diaryDaysContainer'); container.innerHTML = '';
-
-        for(let dayName in timetable) {
-            let dateKey = week.daysDates[dayName].toLocaleDateString('ru-RU');
-            let dayHTML = `<div class="day-block"><div class="day-header">${dayName.toUpperCase()} (${dateKey})</div>`;
-
-            timetable[dayName].forEach((lesson, idx) => {
-                if(!lesson) return;
-                dayHTML += `<div class="row-lesson"><div class="lesson-num">${idx + 1}</div><div class="lesson-name">${lesson}</div><div class="grades-container">`;
-                let lessonStorageKey = `${dateKey}_${lesson}_${idx}`;
-
-                if(currentUser.role === 'student') {
-                    let myGrade = (globalGrades[lessonStorageKey] || {})[currentUser.name] || "";
-                    dayHTML += myGrade ? `<span class="grade-view-badge ${getBadgeColorClass(myGrade)}">${myGrade}</span>` : `<span style="color:var(--text-muted); font-size:13px;">—</span>`;
-                } else if(currentUser.role === 'admin') {
-                    dayHTML += `<span style="color:#f59e0b; font-size:13px;">Режим Создателя (Оценки только для учителей)</span>`;
-                } else {
-                    if(currentUser.subject === lesson) {
-                        let allStudents = allUsers.filter(u => u.role === 'student');
-                        if(allStudents.length === 0) { dayHTML += `<span style="color:var(--text-muted); font-size:13px;">Нет учеников</span>`; } 
-                        else {
-                            let inputId = `input_${lessonStorageKey}`; let selectId = `select_${lessonStorageKey}`;
-                            dayHTML += `<div class="teacher-selector-wrapper"><select id="${selectId}" class="student-select-dropdown" onchange="handleStudentSelectChange(this, '${inputId}', '${lessonStorageKey}')"><option value="">-- Выберите ученика --</option>`;
-                            allStudents.forEach(st => { dayHTML += `<option value="${st.name}">${st.name}</option>`; });
-                            dayHTML += `</select><input type="text" id="${inputId}" class="grade-input-field" data-key="${lessonStorageKey}" placeholder="-", maxlength="2"></div>`;
-                        }
-                    } else { dayHTML += `<span style="color:rgba(255,255,255,0.2); font-size:13px;">Другой предмет</span>`; }
-                }
-                dayHTML += `</div></div>`;
-            });
-            dayHTML += `</div>`; container.innerHTML += dayHTML;
+    function changeWeek(direction) { 
+        let newIdx = currentWeekIndex + direction; 
+        if(newIdx >= 0 && newIdx < academicWeeks.length) {
+            currentWeekIndex = newIdx;
+            renderWeekDiary();
         }
     }
 
-    async function saveGradesData() {
-        let fields = document.querySelectorAll('.grade-input-field');
-        for (let input of fields) {
-            let key = input.getAttribute('data-key'); let student = input.getAttribute('data-student'); if(!student) continue;
-            let val = input.value.trim();
-            
-            if(!globalGrades[key]) globalGrades[key] = {};
-            globalGrades[key][student] = val;
+    // Отрисовка расписания и оценок в дневнике
+    function renderWeekDiary() {
+        const week = academicWeeks[currentWeekIndex];
+        document.getElementById('weekRangeTitle').innerText = `Неделя №${week.id + 1} (${week.startStr} — ${week.endStr})`;
 
-            // Сохраняем в облако каждую измененную строку
-            await supabase.from('diary_grades').upsert({ lesson_key: key, grades_data: globalGrades[key] });
+        const container = document.getElementById('diaryDaysContainer');
+        container.innerHTML = '';
+
+        // Единый селектор выбора ученика для учителя в шапке дневника
+        if(currentUser.role === 'teacher') {
+            let allStudents = allUsers.filter(u => u.role === 'student');
+            let studentSelectorHTML = `
+                <div class="teacher-selector-wrapper" style="margin-bottom: 20px;">
+                    <label style="font-weight: 600;">Выбор ученика для выставления оценок:</label>
+                    <select class="student-select-dropdown" id="globalDiaryStudentSelect" onchange="handleTeacherStudentChange(this.value)">
+                        <option value="">-- Выберите из списка --</option>
+            `;
+            allStudents.forEach(st => {
+                let sel = (st.name === teacherSelectedStudent) ? 'selected' : '';
+                studentSelectorHTML += `<option value="${st.name}" ${sel}>${st.name}</option>`;
+            });
+            studentSelectorHTML += `</select></div>`;
+            container.innerHTML += studentSelectorHTML;
         }
-        alert("Оценки успешно загружены в облачную базу данных!"); 
+
+        // Рендерим дни недели по расписанию
+        for (let dayName in timetable) {
+            let dayLessons = timetable[dayName] || [];
+            let dayHTML = `
+                <div class="day-block">
+                    <div class="day-header">
+                        <span>📅 ${dayName}</span>
+                        <span style="font-size:12px; color:var(--text-muted);">${week.daysDates[dayName] ? week.daysDates[dayName].toLocaleDateString('ru-RU') : ''}</span>
+                    </div>
+            `;
+
+            if(dayLessons.length === 0) {
+                dayHTML += `<div style="color:var(--text-muted); font-size:13px; padding: 5px 0;">Уроков нет</div>`;
+            }
+
+            dayLessons.forEach((lessonName, index) => {
+                let lessonNum = index + 1;
+                dayHTML += `
+                    <div class="row-lesson">
+                        <div class="lesson-num">#${lessonNum}</div>
+                        <div class="lesson-name">${lessonName}</div>
+                        <div class="grades-container" id="cell_${week.id}_${dayName}_${lessonNum}">
+                            ${getGradesCellContent(week.id, dayName, lessonNum, lessonName)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            dayHTML += `</div>`;
+            container.innerHTML += dayHTML;
+        }
+    }
+
+    function handleTeacherStudentChange(val) {
+        teacherSelectedStudent = val;
+        renderWeekDiary();
+    }
+
+    // Определение контента ячейки (Просмотр для ученика / Ввод для учителя)
+    function getGradesCellContent(weekId, dayName, lessonNum, lessonName) {
+        let activeStudent = (currentUser.role === 'teacher') ? teacherSelectedStudent : currentUser.name;
+        if(!activeStudent) return `<span style="color:var(--text-muted); font-size:12px;">выберите ученика</span>`;
+
+        let lessonKey = `${activeStudent}_w${weekId}_${dayName}_${lessonNum}`.toLowerCase().replace(/ /g, '_');
+        let currentGradesStr = globalGrades[lessonKey] || "";
+
+        if (currentUser.role === 'teacher') {
+            // Если учитель ведет этот предмет — даем поле ввода, иначе просто показываем оценки
+            if(currentUser.subject.toLowerCase() === lessonName.toLowerCase()) {
+                return `<input type="text" class="grade-input-field" data-key="${lessonKey}" value="${currentGradesStr}" placeholder="—" maxlength="15">`;
+            } else {
+                return renderStaticBadges(currentGradesStr);
+            }
+        } else {
+            // Ученики и админы просто видят красивые оценки
+            return renderStaticBadges(currentGradesStr);
+        }
+    }
+
+    function renderStaticBadges(str) {
+        if(!str || !str.trim()) return `<span style="color:rgba(255,255,255,0.1); font-size:13px;">—</span>`;
+        let parts = str.split(/[\s,]+/);
+        let html = "";
+        parts.forEach(p => {
+            if(!p.trim()) return;
+            let cls = "badge-mid";
+            if(p === "5") cls = "badge-high";
+            if(p === "4") cls = "badge-good";
+            if(p === "3") cls = "badge-mid";
+            if(p === "2" || p === "1") cls = "badge-low";
+            html += `<div class="grade-view-badge ${cls}">${p}</div>`;
+        });
+        return html;
+    }
+
+    // Сохранение изменений учителем в базу данных Supabase
+    async function saveGradesData() {
+        if(currentUser.role !== 'teacher') return;
+        const inputs = document.querySelectorAll('.grade-input-field');
+        
+        for (let inp of inputs) {
+            let key = inp.getAttribute('data-key');
+            let val = inp.value.trim();
+
+            if(val) {
+                globalGrades[key] = val;
+                // Отправляем запись методом UPSERT (создать или обновить существующую)
+                await supabase.from('diary_grades').upsert([{ lesson_key: key, grades_data: val }], { onConflict: 'lesson_key' });
+            } else {
+                if(globalGrades[key]) {
+                    delete globalGrades[key];
+                    await supabase.from('diary_grades').delete().eq('lesson_key', key);
+                }
+            }
+        }
+        alert("Оценки успешно сохранены в облаке!");
         loadOnlineConfig();
     }
 
-    loadOnlineConfig();
+    // Первая автозагрузка при старте страницы
+    window.onload = function() {
+        loadOnlineConfig();
+    };
 </script>
 
 </body>

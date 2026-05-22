@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Инновационный Дневник 8 «В»</title>
+    <title id="sitePageTitle">⚡ Инновационный Дневник 8 «В»</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
+    <style id="dynamicStyles">
         :root {
             --bg: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
             --glass: rgba(15, 23, 42, 0.65);
@@ -17,13 +17,14 @@
             --text-muted: #94a3b8;
             --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             --danger: #ef4444;
-            --danger-glow: rgba(239, 68, 68, 0.3);
             --success: #10b981;
-            --warning: #f59e0b;
         }
-
+    </style>
+    <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; transition: background 0.3s ease; }
+
+        .ticker-notice { width: 100%; max-width: 1300px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.25); color: #f59e0b; padding: 12px 20px; border-radius: 14px; margin-bottom: 15px; font-weight: 600; font-size: 14px; display: none; text-align: center; }
 
         .glass-panel {
             width: 100%;
@@ -38,7 +39,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            position: relative;
         }
 
         .screen { display: none; padding: 40px; flex-direction: column; flex: 1; }
@@ -49,7 +49,6 @@
             to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
-        /* Форма входа */
         .auth-wrapper {
             max-width: 440px;
             margin: auto;
@@ -63,60 +62,49 @@
 
         .auth-wrapper h2 { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 25px; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .tabs { display: flex; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 14px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.02); }
-        .tab-btn { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; border-radius: 10px; transition: all 0.25s ease; font-size: 14px; }
+        .tabs { display: flex; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 14px; margin-bottom: 24px; }
+        .tab-btn { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; border-radius: 10px; font-size: 14px; }
         .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px var(--accent-glow); }
 
         .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 14px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-size: 15px; outline: none; transition: all 0.2s; }
-        .input-group textarea { resize: none; height: 90px; font-size: 14px; }
-        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .input-group input, .input-group select { width: 100%; padding: 14px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-size: 15px; outline: none; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--accent); background: rgba(255,255,255,0.06); }
 
         .action-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
         .action-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
-        .action-btn:active { transform: translateY(1px); }
-        .toggle-auth { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .toggle-auth { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
         .toggle-auth:hover { color: white; text-decoration: underline; }
 
-        /* Рабочее пространство */
-        .dashboard { display: grid; grid-template-columns: 300px 1fr; min-height: 750px; flex: 1; }
+        .dashboard { display: grid; grid-template-columns: 320px 1fr; min-height: 750px; flex: 1; }
         .sidebar { border-right: 1px solid var(--glass-border); padding: 35px; display: flex; flex-direction: column; background: rgba(0,0,0,0.15); }
         .main-content { padding: 40px; overflow-y: auto; background: rgba(255,255,255,0.01); }
 
         .user-card { margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 25px; }
-        .user-card h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-        .user-card p { font-size: 13px; color: var(--accent); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .user-card h3 { font-size: 20px; font-weight: 700; }
+        .user-card p { font-size: 13px; color: var(--accent); margin-top: 4px; font-weight: 600; text-transform: uppercase; }
 
         .content-nav-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-        .nav-tab { padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px; }
-        .nav-tab:hover { background: rgba(255,255,255,0.06); color: white; }
+        .nav-tab { padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 12px; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; }
         .nav-tab.active { background: var(--accent); color: white; border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
 
-        .teacher-remark-panel { background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); padding: 25px; border-radius: 20px; margin-bottom: 35px; backdrop-filter: blur(10px); }
-        .teacher-remark-panel h4 { font-size: 16px; color: var(--danger); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
-
         .week-navigation { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 18px 28px; border-radius: 20px; margin-bottom: 30px; border: 1px solid var(--glass-border); }
-        .nav-arrow { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; }
-        .nav-arrow:hover { background: var(--accent); border-color: transparent; box-shadow: 0 4px 12px var(--accent-glow); }
-        .week-title { font-size: 17px; font-weight: 700; letter-spacing: 0.5px; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-arrow { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .nav-arrow:hover { background: var(--accent); border-color: transparent; }
+        .week-title { font-size: 17px; font-weight: 700; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Расписание */
-        .day-block { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; margin-bottom: 25px; position: relative; transition: border-color 0.3s; }
-        .day-block:hover { border-color: rgba(99, 102, 241, 0.2); }
+        .day-block { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; margin-bottom: 25px; }
         .day-header { font-size: 18px; font-weight: 800; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         
         .row-lesson { display: grid; grid-template-columns: 50px 280px 1fr; align-items: center; padding: 14px 0; border-bottom: 1px dashed rgba(255,255,255,0.04); }
         .row-lesson:last-child { border-bottom: none; }
         .lesson-num { color: var(--text-muted); font-weight: 700; font-size: 14px; }
-        .lesson-name { font-weight: 600; font-size: 15px; letter-spacing: 0.3px; padding-right: 15px; }
+        .lesson-name { font-weight: 600; font-size: 15px; padding-right: 15px; }
 
         .grades-container { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         
-        /* Цвета 10-балльной системы */
-        .grade-view-badge { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 800; font-size: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); transition: transform 0.2s; }
-        .grade-view-badge:hover { transform: scale(1.08); }
-        .badge-excellent { background: rgba(16, 185, 129, 0.18); color: #10b981; border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 0 10px rgba(16, 185, 129, 0.1); } 
+        .grade-view-badge { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 800; font-size: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); }
+        .badge-excellent { background: rgba(16, 185, 129, 0.18); color: #10b981; border-color: rgba(16, 185, 129, 0.35); } 
         .badge-good { background: rgba(59, 130, 246, 0.18); color: #3b82f6; border-color: rgba(59, 130, 246, 0.35); } 
         .badge-satisfactory { background: rgba(245, 158, 11, 0.18); color: #f59e0b; border-color: rgba(245, 158, 11, 0.35); }  
         .badge-unsatisfactory { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }  
@@ -124,49 +112,16 @@
 
         .teacher-selector-wrapper { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--glass-border); }
         .student-select-dropdown { background: #0f172a; color: white; border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 8px; font-size: 14px; outline: none; min-width: 220px; }
-        .grade-input-field { width: 60px; height: 36px; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 8px; color: white; text-align: center; font-weight: 800; font-size: 15px; outline: none; transition: all 0.15s; }
-        .grade-input-field:focus { border-color: var(--accent); background: rgba(255,255,255,0.12); box-shadow: 0 0 8px var(--accent-glow); }
-        
-        .remark-item { background: rgba(239,68,68,0.02); border: 1px solid rgba(239,68,68,0.12); border-left: 4px solid var(--danger); padding: 20px; border-radius: 14px; margin-bottom: 18px; }
-        .remark-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .remark-sender { color: var(--danger); font-weight: 700; }
-        .remark-text { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--text-main); }
+        .grade-input-field { width: 60px; height: 36px; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 8px; color: white; text-align: center; font-weight: 800; font-size: 15px; outline: none; }
+        .grade-input-field:focus { border-color: var(--accent); background: rgba(255,255,255,0.12); }
 
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 25px; background: rgba(255,255,255,0.01); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border); }
-        .admin-table th, .admin-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--glass-border); }
-        .admin-table th { background: rgba(255,255,255,0.04); font-weight: 700; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .danger-btn { padding: 8px 16px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-        .danger-btn:hover { background: #ef4444; color: white; border-color: transparent; box-shadow: 0 4px 12px var(--danger-glow); }
-
-        .alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .alert-overlay.show { opacity: 1; pointer-events: auto; }
-        .alert-modal { background: #1e1b4b; border: 2px solid var(--danger); box-shadow: 0 0 50px rgba(239, 68, 68, 0.25); width: 100%; max-width: 550px; padding: 40px; border-radius: 28px; text-align: center; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .alert-overlay.show .alert-modal { transform: scale(1); }
-        
-        .alert-icon { width: 68px; height: 68px; background: rgba(239,68,68,0.15); color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 800; margin: 0 auto 22px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 18px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
-        
-        .alert-modal h3 { font-size: 26px; font-weight: 800; color: white; margin-bottom: 12px; }
-        .alert-modal p { color: var(--text-muted); font-size: 15px; margin-bottom: 22px; }
-        .alert-scroll-box { max-height: 240px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.4); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; }
-        .alert-inner-item { border-bottom: 1px dashed rgba(239,68,68,0.2); padding-bottom: 12px; margin-bottom: 12px; }
-        .alert-inner-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-
-        .logout-btn { padding: 12px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: auto; transition: all 0.2s; text-align: center; }
-        .logout-btn:hover { background: #ef4444; color: white; border-color: transparent; box-shadow: 0 4px 12px var(--danger-glow); }
+        .logout-btn { padding: 12px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: auto; text-align: center; border: 1px solid transparent; }
+        .logout-btn:hover { background: #ef4444; color: white; }
     </style>
 </head>
 <body>
 
-<div class="alert-overlay" id="remarkAlertOverlay">
-    <div class="alert-modal">
-        <div class="alert-icon">⚠️</div>
-        <h3>Внимание! Замечание</h3>
-        <p>Учитель оставил записи в вашем дневнике:</p>
-        <div class="alert-scroll-box" id="alertScrollBox"></div>
-        <button class="action-btn" style="background: var(--danger);" onclick="closeRemarkAlert()">Я ознакомлен(-а)</button>
-    </div>
-</div>
+<div class="ticker-notice" id="siteNoticeBar"></div>
 
 <div class="glass-panel">
 
@@ -189,7 +144,7 @@
                 <label>Пароль</label>
                 <input type="password" id="authPass" placeholder="••••••••">
             </div>
-            <button class="action-btn" onclick="processAuth()" id="authBtn">Войти в журнал</button>
+            <button class="action-btn" onclick="processAuth()" id="authBtn">Войти в систему</button>
             <div class="toggle-auth" id="toggleMode" onclick="toggleMode()">У меня нет аккаунта (Регистрация)</div>
         </div>
     </div>
@@ -201,73 +156,23 @@
                     <h3 id="displayUserName">Загрузка...</h3>
                     <p id="displayUserRole">Класс 8 «В»</p>
                 </div>
-                <div class="content-nav-tabs" style="flex-direction: column; gap: 8px;">
-                    <div class="nav-tab active" id="tabDiaryLink" onclick="switchTab('diary')">📖 Электронный дневник</div>
-                    <div class="nav-tab" id="tabRemarksLink" onclick="switchTab('remarks')">🚨 Замечания <span id="remarkCountBadge" style="display:none; background:var(--danger); color:white; padding:2px 6px; border-radius:10px; font-size:11px;">0</span></div>
-                    
-                    <div class="nav-tab" id="tabAdminUsersLink" style="display: none; border-color: rgba(245,158,11,0.3); color: #f59e0b;" onclick="switchTab('admin_users')">👑 Управление пользователями</div>
-                    <div class="nav-tab" id="tabAdminTimetableLink" style="display: none; border-color: rgba(245,158,11,0.3); color: #f59e0b;" onclick="switchTab('admin_timetable')">⚙️ Изменить Расписание</div>
+                <div class="content-nav-tabs" style="flex-direction: column;">
+                    <div class="nav-tab active">📖 Электронный дневник</div>
                 </div>
-                <button class="logout-btn" onclick="logout()">Выйти из системы</button>
+                <button class="logout-btn" onclick="logout()">Выйти</button>
             </aside>
 
             <main class="main-content">
-                <div id="tabContentDiary">
-                    <div id="teacherRemarkZone" class="teacher-remark-panel" style="display: none;">
-                        <h4>🚨 Кабинет замечаний учителя</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 15px;">
-                            <div class="input-group" style="margin:0;">
-                                <label>Кому оставить замечание?</label>
-                                <select id="remarkStudentTarget" class="student-select-dropdown" style="width:100%; height:48px;"></select>
-                            </div>
-                            <div class="input-group" style="margin:0;">
-                                <label>Текст замечания</label>
-                                <textarea id="remarkText" placeholder="Например: Сорвал урок..."></textarea>
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <button class="action-btn" style="width: auto; background: var(--danger); padding: 10px 25px;" onclick="sendRemark()">⚠️ Направить замечание</button>
-                        </div>
-                    </div>
-
-                    <div class="week-navigation">
-                        <button class="nav-arrow" onclick="changeWeek(-1)">◀ Пред. Неделя</button>
-                        <div class="week-title" id="weekRangeTitle">Загрузка расписания...</div>
-                        <button class="nav-arrow" onclick="changeWeek(1)">След. Неделя ▶</button>
-                    </div>
-
-                    <div id="diaryDaysContainer"></div>
-
-                    <div id="saveBlock" style="margin-top: 25px; text-align: right; display: none;">
-                        <button class="action-btn" style="width: auto; padding: 15px 40px; background: var(--success);" onclick="saveGradesData()">💾 Сохранить оценки</button>
-                    </div>
+                <div class="week-navigation">
+                    <button class="nav-arrow" onclick="changeWeek(-1)">◀ Пред. Неделя</button>
+                    <div class="week-title" id="weekRangeTitle">Загрузка...</div>
+                    <button class="nav-arrow" onclick="changeWeek(1)">След. Неделя ▶</button>
                 </div>
 
-                <div id="tabContentRemarks" style="display: none;">
-                    <h2 style="margin-bottom: 20px; font-weight: 800;">📋 Исторический архив замечаний</h2>
-                    <div id="remarksListContainer"></div>
-                </div>
+                <div id="diaryDaysContainer"></div>
 
-                <div id="tabContentAdminUsers" style="display: none;">
-                    <h2 style="margin-bottom: 10px; font-weight: 800; color: #f59e0b;">Управление учениками и учителями</h2>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Имя / Фамилия</th>
-                                <th>Роль</th>
-                                <th>Предмет</th>
-                                <th>Пароль</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminUsersTableBody"></tbody>
-                    </table>
-                </div>
-
-                <div id="tabContentAdminTimetable" style="display: none;">
-                    <h2 style="margin-bottom: 10px; font-weight: 800; color: #f59e0b;">Редактирование расписания уроков</h2>
-                    <div id="adminTimetableFormContainer" style="max-width: 700px;"></div>
-                    <button class="action-btn" style="background: var(--success); max-width: 300px; margin-top: 15px;" onclick="saveNewTimetable()">⚡ Применить новое расписание</button>
+                <div id="saveBlock" style="margin-top: 25px; text-align: right; display: none;">
+                    <button class="action-btn" style="width: auto; padding: 15px 40px; background: var(--success);" onclick="saveGradesData()">💾 Сохранить оценки</button>
                 </div>
             </main>
         </div>
@@ -276,11 +181,8 @@
 </div>
 
 <script>
-    // === ВСТАВЬ СЮДА СВОИ ДАННЫЕ ИЗ SUPABASE ===
     const SUPABASE_URL = "https://kyfnpsnnymhyapktyulf.supabase.co";
     const SUPABASE_KEY = "sb_publishable_YOncKyjzNTiiKkCzdWbEBg_dJylOA-9";
-    // ===========================================
-
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let timetable = {
@@ -290,59 +192,64 @@
         "Четверг": ["ИСТОРИЯ", "КЛ-ЧАС", "РУСС-ЯЗ", "ГОСС-ПРАВО", "ОБЖ", "ГОСС-ЯЗ"],
         "Пятница": ["ИКТ", "БИОЛОГИЯ", "РУСС-ЯЗ", "ФИЗРА", "ЛИТ-РА", "ГЕОГРАФИЯ"],
         "Суббота": ["ХИМИЯ", "ЧЕРЧЕНИЕ", "ГОСС-ЯЗ"]
-    }; 
+    };
+
     let allUsers = [];
     let globalGrades = {};
-    let allRemarks = [];
-    let currentUser = null; 
-    let currentRole = 'student'; 
+    let currentUser = null;
+    let currentRole = 'student';
     let isRegisterMode = false;
     let currentWeekIndex = 0;
-    let teacherSelectedStudent = ""; 
+    let teacherSelectedStudent = "";
 
     function getUniqueSubjectsFromTimetable() {
         const unique = [];
         for(let day in timetable) {
-            timetable[day].forEach(sub => {
-                if(!unique.includes(sub)) unique.push(sub);
-            });
+            timetable[day].forEach(sub => { if(!unique.includes(sub)) unique.push(sub); });
         }
         return unique.sort();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        const authFields = ['authName', 'authPass'];
-        authFields.forEach(id => {
-            document.getElementById(id).addEventListener("keydown", (e) => {
-                if (e.key === "Enter") { processAuth(); }
-            });
-        });
-
-        document.getElementById('remarkText').addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendRemark();
-            }
-        });
-        
         loadOnlineConfig();
     });
 
     async function loadOnlineConfig() {
-        let { data: config } = await supabaseClient.from('diary_config').select('timetable').single();
-        if (config) timetable = config.timetable;
+        let { data: config } = await supabaseClient.from('diary_config').select('*').single();
+        if (config) {
+            if(config.timetable) timetable = config.timetable;
+            if(config.site_title) document.getElementById('sitePageTitle').innerText = config.site_title;
+            if(config.site_accent) {
+                document.getElementById('dynamicStyles').innerHTML = `
+                    :root {
+                        --bg: ${config.site_bg || 'radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%)'};
+                        --glass: rgba(15, 23, 42, 0.65);
+                        --glass-border: rgba(255, 255, 255, 0.08);
+                        --accent: ${config.site_accent};
+                        --accent-glow: ${config.site_accent}55;
+                        --text-main: #f8fafc;
+                        --text-muted: #94a3b8;
+                        --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+                        --danger: #ef4444;
+                        --success: #10b981;
+                    }
+                `;
+            }
+            const noticeBar = document.getElementById('siteNoticeBar');
+            if(config.site_notice && config.site_notice.trim() !== "") {
+                noticeBar.innerText = config.site_notice;
+                noticeBar.style.display = 'block';
+            } else {
+                noticeBar.style.display = 'none';
+            }
+        }
 
         let { data: users } = await supabaseClient.from('diary_users').select('*');
         if (users) allUsers = users;
 
         let { data: grades } = await supabaseClient.from('diary_grades').select('*');
         globalGrades = {};
-        if (grades) {
-            grades.forEach(g => { globalGrades[g.lesson_key] = g.grades_data; });
-        }
-
-        let { data: remarks } = await supabaseClient.from('diary_remarks').select('*');
-        if (remarks) allRemarks = remarks;
+        if (grades) { grades.forEach(g => { globalGrades[g.lesson_key] = g.grades_data; }); }
 
         const uniqueSubjects = getUniqueSubjectsFromTimetable();
         const subSelect = document.getElementById('authSubject');
@@ -350,18 +257,12 @@
             subSelect.innerHTML = '';
             uniqueSubjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
         }
-        
+
         const today = new Date();
-        const foundIndex = academicWeeks.findIndex(w => {
-            const start = parseDate(w.startStr);
-            const end = parseDate(w.endStr);
-            return today >= start && today <= end;
-        });
+        const foundIndex = academicWeeks.findIndex(w => today >= parseDate(w.startStr) && today <= parseDate(w.endStr));
         if (foundIndex !== -1) currentWeekIndex = foundIndex;
 
-        if(currentUser) {
-            renderWeekDiary();
-        }
+        if(currentUser) renderWeekDiary();
     }
 
     function parseDate(str) {
@@ -386,7 +287,6 @@
         }
         return weeks;
     }
-
     const academicWeeks = generateAcademicWeeks();
 
     function setRole(role) {
@@ -399,9 +299,8 @@
     function toggleMode() {
         isRegisterMode = !isRegisterMode;
         document.getElementById('authTitle').innerText = isRegisterMode ? "Регистрация" : "Авторизация";
-        document.getElementById('authBtn').innerText = isRegisterMode ? "Зарегистрироваться" : "Войти в журнал";
+        document.getElementById('authBtn').innerText = isRegisterMode ? "Зарегистрироваться" : "Войти в систему";
         document.getElementById('toggleMode').innerText = isRegisterMode ? "Уже есть аккаунт? Войти" : "Регистрация";
-        setRole(currentRole);
     }
 
     async function processAuth() {
@@ -413,35 +312,13 @@
 
         if(isRegisterMode) {
             let exists = allUsers.find(u => u.name.toLowerCase() === name.toLowerCase());
-            if(exists) return alert("Пользователь с таким именем уже есть!");
-            
+            if(exists) return alert("Пользователь уже существует!");
             await supabaseClient.from('diary_users').insert([{ name, pass, role: currentRole, subject: currentRole === 'teacher' ? subject : null }]);
-            alert("Успешная регистрация! Войдите в систему."); toggleMode();
+            alert("Регистрация успешна!"); toggleMode();
         } else {
             let account = allUsers.find(u => u.name.toLowerCase() === name.toLowerCase() && u.pass === pass);
-            if(account) { 
-                currentUser = account; 
-                enterSystem(); 
-            } else { 
-                alert("Неверное имя пользователя или пароль!"); 
-            }
+            if(account) { currentUser = account; enterSystem(); } else { alert("Неверный логин или пароль!"); }
         }
-    }
-
-    function switchTab(tabName) {
-        document.getElementById('tabDiaryLink').classList.toggle('active', tabName === 'diary');
-        document.getElementById('tabRemarksLink').classList.toggle('active', tabName === 'remarks');
-        document.getElementById('tabAdminUsersLink').classList.toggle('active', tabName === 'admin_users');
-        document.getElementById('tabAdminTimetableLink').classList.toggle('active', tabName === 'admin_timetable');
-        
-        document.getElementById('tabContentDiary').style.display = tabName === 'diary' ? 'block' : 'none';
-        document.getElementById('tabContentRemarks').style.display = tabName === 'remarks' ? 'block' : 'none';
-        document.getElementById('tabContentAdminUsers').style.display = tabName === 'admin_users' ? 'block' : 'none';
-        document.getElementById('tabContentAdminTimetable').style.display = tabName === 'admin_timetable' ? 'block' : 'none';
-        
-        if(tabName === 'remarks') renderRemarksArchive();
-        if(tabName === 'admin_users') renderAdminUsersPanel();
-        if(tabName === 'admin_timetable') renderAdminTimetablePanel();
     }
 
     function enterSystem() {
@@ -449,60 +326,24 @@
         document.getElementById('dashboardScreen').classList.add('active');
         document.getElementById('displayUserName').innerText = currentUser.name;
         
-        document.getElementById('tabAdminUsersLink').style.display = 'none';
-        document.getElementById('tabAdminTimetableLink').style.display = 'none';
-
-        switchTab('diary');
-        const allStudents = allUsers.filter(u => u.role === 'student');
-
-        if(currentUser.role === 'admin') {
-            document.getElementById('displayUserRole').innerText = `👑 Создатель Системы`;
-            document.getElementById('saveBlock').style.display = 'none';
-            document.getElementById('teacherRemarkZone').style.display = 'none';
-            document.getElementById('tabAdminUsersLink').style.display = 'block';
-            document.getElementById('tabAdminTimetableLink').style.display = 'block';
-        }
-        else if(currentUser.role === 'teacher') {
+        if(currentUser.role === 'teacher') {
             document.getElementById('displayUserRole').innerText = `Учитель: ${currentUser.subject}`;
             document.getElementById('saveBlock').style.display = 'block';
-            document.getElementById('teacherRemarkZone').style.display = 'block';
-            const rSel = document.getElementById('remarkStudentTarget');
-            rSel.innerHTML = '<option value="">-- Выберите ученика --</option>';
-            allStudents.forEach(st => { rSel.innerHTML += `<option value="${st.name}">${st.name}</option>`; });
         } else {
             document.getElementById('displayUserRole').innerText = `Ученик 8 «В» класса`;
             document.getElementById('saveBlock').style.display = 'none';
-            document.getElementById('teacherRemarkZone').style.display = 'none';
-            checkUnreadRemarksForStudent();
         }
-        updateRemarkBadgeCount();
         renderWeekDiary();
     }
 
     function logout() { currentUser = null; document.getElementById('dashboardScreen').classList.remove('active'); document.getElementById('authScreen').classList.add('active'); }
 
-    function getGradeClass10(gradeStr) {
-        const val = parseFloat(gradeStr);
-        if (isNaN(val)) return '';
-        if (val >= 9) return 'badge-excellent';      
-        if (val >= 7) return 'badge-good';           
-        if (val >= 5) return 'badge-satisfactory';   
-        if (val >= 3) return 'badge-unsatisfactory'; 
-        return 'badge-critical';                     
-    }
-
     function changeWeek(direction) {
         let newIndex = currentWeekIndex + direction;
-        if(newIndex >= 0 && newIndex < academicWeeks.length) {
-            currentWeekIndex = newIndex;
-            renderWeekDiary();
-        }
+        if(newIndex >= 0 && newIndex < academicWeeks.length) { currentWeekIndex = newIndex; renderWeekDiary(); }
     }
 
-    function selectStudentForTeacher(studentName) {
-        teacherSelectedStudent = studentName;
-        renderWeekDiary();
-    }
+    function selectStudentForTeacher(studentName) { teacherSelectedStudent = studentName; renderWeekDiary(); }
 
     function renderWeekDiary() {
         const week = academicWeeks[currentWeekIndex];
@@ -510,258 +351,71 @@
         const container = document.getElementById('diaryDaysContainer');
         container.innerHTML = '';
 
-        if(currentUser.role === 'teacher') {
-            let selectHTML = `
-                <div class="teacher-selector-wrapper" style="margin-bottom: 20px;">
-                    <label style="font-weight:700;">Выбор ученика для выставления оценок:</label>
-                    <select class="student-select-dropdown" id="diaryStudentTarget" onchange="selectStudentForTeacher(this.value)">
-                        <option value="">-- Выберите из списка --</option>
-            `;
+        if(currentUser && currentUser.role === 'teacher') {
+            let selectHTML = `<div class="teacher-selector-wrapper" style="margin-bottom:20px;"><label style="font-weight:700;">Ученик:</label><select class="student-select-dropdown" onchange="selectStudentForTeacher(this.value)"><option value="">-- Выберите ученика --</option>`;
             allUsers.filter(u => u.role === 'student').forEach(st => {
-                let selected = (st.name === teacherSelectedStudent) ? 'selected' : '';
-                selectHTML += `<option value="${st.name}" ${selected}>${st.name}</option>`;
+                selectHTML += `<option value="${st.name}" ${st.name === teacherSelectedStudent ? 'selected' : ''}>${st.name}</option>`;
             });
-            selectHTML += `</select></div>`;
-            container.innerHTML += selectHTML;
+            container.innerHTML += selectHTML + `</select></div>`;
         }
 
         for(let day in timetable) {
             let dayDate = new Date(week.daysDates[day]).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
-            let dayBlock = document.createElement('div');
-            dayBlock.className = 'day-block';
-            
+            let dayBlock = document.createElement('div'); dayBlock.className = 'day-block';
             let html = `<div class="day-header"><span>${day}</span><span style="font-size:13px; color:var(--text-muted);">${dayDate}</span></div>`;
             
             timetable[day].forEach((lessonName, index) => {
                 let lessonNum = index + 1;
-                let targetUser = (currentUser.role === 'teacher') ? teacherSelectedStudent : currentUser.name;
+                let targetUser = (currentUser && currentUser.role === 'teacher') ? teacherSelectedStudent : (currentUser ? currentUser.name : '');
                 let lessonKey = `w${week.id}_${day}_L${lessonNum}_${lessonName}_${targetUser}`;
                 let currentGrades = globalGrades[lessonKey] || [];
-
                 let gradesHTML = '';
-                
-                if(currentUser.role === 'teacher') {
-                    let isMySubject = (lessonName.toLowerCase() === currentUser.subject.toLowerCase());
-                    if(isMySubject && teacherSelectedStudent) {
-                        let val1 = currentGrades[0] || '';
-                        let val2 = currentGrades[1] || '';
-                        let val3 = currentGrades[2] || '';
-                        
-                        gradesHTML = `
-                            <div class="grades-container">
-                                <input type="text" class="grade-input-field ${getGradeClass10(val1)}" data-key="${lessonKey}" data-idx="0" value="${val1}" maxlength="2">
-                                <input type="text" class="grade-input-field ${getGradeClass10(val2)}" data-key="${lessonKey}" data-idx="1" value="${val2}" maxlength="2">
-                                <input type="text" class="grade-input-field ${getGradeClass10(val3)}" data-key="${lessonKey}" data-idx="2" value="${val3}" maxlength="2">
-                            </div>
-                        `;
-                    } else {
-                        currentGrades.forEach(g => {
-                            if(g) gradesHTML += `<span class="grade-view-badge ${getGradeClass10(g)}">${g}</span>`;
-                        });
-                    }
+
+                if(currentUser && currentUser.role === 'teacher' && lessonName.toLowerCase() === currentUser.subject.toLowerCase() && teacherSelectedStudent) {
+                    let v1 = currentGrades[0] || '', v2 = currentGrades[1] || '', v3 = currentGrades[2] || '';
+                    gradesHTML = `
+                        <div class="grades-container">
+                            <input type="text" class="grade-input-field ${getGradeClass10(v1)}" data-key="${lessonKey}" data-idx="0" value="${v1}" maxlength="2">
+                            <input type="text" class="grade-input-field ${getGradeClass10(v2)}" data-key="${lessonKey}" data-idx="1" value="${v2}" maxlength="2">
+                            <input type="text" class="grade-input-field ${getGradeClass10(v3)}" data-key="${lessonKey}" data-idx="2" value="${v3}" maxlength="2">
+                        </div>
+                    `;
                 } else {
-                    currentGrades.forEach(g => {
-                        if(g) gradesHTML += `<span class="grade-view-badge ${getGradeClass10(g)}">${g}</span>`;
-                    });
+                    currentGrades.forEach(g => { if(g) gradesHTML += `<span class="grade-view-badge ${getGradeClass10(g)}">${g}</span>`; });
                 }
-
-                html += `
-                    <div class="row-lesson">
-                        <div class="lesson-num">${lessonNum}</div>
-                        <div class="lesson-name">${lessonName}</div>
-                        <div class="grades-container">${gradesHTML || '<span style="color:var(--text-muted); font-size:14px;">—</span>'}</div>
-                    </div>
-                `;
+                html += `<div class="row-lesson"><div class="lesson-num">${lessonNum}</div><div class="lesson-name">${lessonName}</div><div class="grades-container">${gradesHTML || '—'}</div></div>`;
             });
-
-            dayBlock.innerHTML = html;
-            container.appendChild(dayBlock);
+            dayBlock.innerHTML = html; container.appendChild(dayBlock);
         }
     }
 
+    function getGradeClass10(g) {
+        let v = parseFloat(g); if(isNaN(v)) return '';
+        if(v >= 9) return 'badge-excellent'; if(v >= 7) return 'badge-good';
+        if(v >= 5) return 'badge-satisfactory'; if(v >= 3) return 'badge-unsatisfactory';
+        return 'badge-critical';
+    }
+
     async function saveGradesData() {
-        if(currentUser.role !== 'teacher' || !teacherSelectedStudent) return;
         const inputs = document.querySelectorAll('.grade-input-field');
         let localChanges = {};
-
         inputs.forEach(input => {
-            let key = input.dataset.key;
-            let idx = parseInt(input.dataset.idx);
-            let val = input.value.trim();
-
+            let key = input.dataset.key, idx = parseInt(input.dataset.idx), val = input.value.trim();
             if(!localChanges[key]) localChanges[key] = globalGrades[key] || ['', '', ''];
             localChanges[key][idx] = val;
         });
 
         for(let key in localChanges) {
-            let filteredArray = localChanges[key].filter(x => x !== '');
-            globalGrades[key] = filteredArray;
-
+            let arr = localChanges[key].filter(x => x !== '');
+            globalGrades[key] = arr;
             let { data } = await supabaseClient.from('diary_grades').select('*').eq('lesson_key', key);
             if(data && data.length > 0) {
-                await supabaseClient.from('diary_grades').update({ grades_data: filteredArray }).eq('lesson_key', key);
-            } else {
-                if(filteredArray.length > 0) {
-                    await supabaseClient.from('diary_grades').insert([{ lesson_key: key, grades_data: filteredArray }]);
-                }
+                await supabaseClient.from('diary_grades').update({ grades_data: arr }).eq('lesson_key', key);
+            } else if(arr.length > 0) {
+                await supabaseClient.from('diary_grades').insert([{ lesson_key: key, grades_data: arr }]);
             }
         }
-        alert("Оценки успешно сохранены в базе Supabase!");
-        renderWeekDiary();
-    }
-
-    async function sendRemark() {
-        const target = document.getElementById('remarkStudentTarget').value;
-        const text = document.getElementById('remarkText').value.trim();
-        if(!target || !text) return alert("Выберите ученика и напишите текст!");
-
-        await supabaseClient.from('diary_remarks').insert([{
-            student_name: target,
-            sender_teacher: `${currentUser.name} (${currentUser.subject})`,
-            remark_text: text,
-            is_read: false,
-            created_at: new Date().toISOString()
-        }]);
-
-        document.getElementById('remarkText').value = '';
-        alert(`Замечание для ${target} успешно отправлено!`);
-        await loadOnlineConfig();
-    }
-
-    function checkUnreadRemarksForStudent() {
-        if(currentUser.role !== 'student') return;
-        let unread = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase() && !r.is_read);
-        if(unread.length > 0) {
-            let box = document.getElementById('alertScrollBox');
-            box.innerHTML = '';
-            unread.forEach(r => {
-                box.innerHTML += `
-                    <div class="alert-inner-item">
-                        <div style="font-size:12px; color:var(--danger); font-weight:700; margin-bottom:4px;">От: ${r.sender_teacher}</div>
-                        <div style="font-size:14px; color:white;">${r.remark_text}</div>
-                    </div>
-                `;
-            });
-            document.getElementById('remarkAlertOverlay').classList.add('show');
-        }
-    }
-
-    async function closeRemarkAlert() {
-        document.getElementById('remarkAlertOverlay').classList.remove('show');
-        let unread = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase() && !r.is_read);
-        for(let r of unread) {
-            await supabaseClient.from('diary_remarks').update({ is_read: true }).eq('id', r.id);
-        }
-        await loadOnlineConfig();
-    }
-
-    function updateRemarkBadgeCount() {
-        if(!currentUser) return;
-        let count = 0;
-        if(currentUser.role === 'student') {
-            count = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase() && !r.is_read).length;
-        } else if(currentUser.role === 'teacher') {
-            count = allRemarks.filter(r => r.sender_teacher.includes(currentUser.name)).length;
-        } else {
-            count = allRemarks.length;
-        }
-        
-        let badge = document.getElementById('remarkCountBadge');
-        if(count > 0) {
-            badge.innerText = count;
-            badge.style.display = 'inline-block';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    function renderRemarksArchive() {
-        let container = document.getElementById('remarksListContainer');
-        container.innerHTML = '';
-        let list = [];
-
-        if(currentUser.role === 'student') {
-            list = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase());
-        } else if(currentUser.role === 'teacher') {
-            list = allRemarks.filter(r => r.sender_teacher.includes(currentUser.name));
-        } else {
-            list = allRemarks;
-        }
-
-        if(list.length === 0) {
-            container.innerHTML = '<p style="color:var(--text-muted);">Замечаний не обнаружено.</p>';
-            return;
-        }
-
-        list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).forEach(r => {
-            let dateStr = new Date(r.created_at).toLocaleDateString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-            container.innerHTML += `
-                <div class="remark-item">
-                    <div class="remark-meta">
-                        <span>Нарушитель: <b style="color:white;">${r.student_name}</b></span>
-                        <span>${dateStr}</span>
-                    </div>
-                    <div class="remark-sender">Отправитель: ${r.sender_teacher}</div>
-                    <div class="remark-text" style="margin-top:8px;">${r.remark_text}</div>
-                </div>
-            `;
-        });
-    }
-
-    function renderAdminUsersPanel() {
-        let body = document.getElementById('adminUsersTableBody');
-        body.innerHTML = '';
-        allUsers.forEach(u => {
-            body.innerHTML += `
-                <tr>
-                    <td><b>${u.name}</b></td>
-                    <td><span style="text-transform:uppercase; font-size:12px; font-weight:700;">${u.role}</span></td>
-                    <td>${u.subject || '—'}</td>
-                    <td><code>${u.pass}</code></td>
-                    <td><button class="danger-btn" onclick="deleteUser(${u.id})">Удалить</button></td>
-                </tr>
-            `;
-        });
-    }
-
-    async function deleteUser(id) {
-        if(!confirm("Удалить пользователя из базы данных?")) return;
-        await supabaseClient.from('diary_users').delete().eq('id', id);
-        alert("Пользователь удален!");
-        await loadOnlineConfig();
-        renderAdminUsersPanel();
-    }
-
-    function renderAdminTimetablePanel() {
-        let container = document.getElementById('adminTimetableFormContainer');
-        container.innerHTML = '';
-        for(let day in timetable) {
-            let lessonsText = timetable[day].join(', ');
-            container.innerHTML += `
-                <div class="input-group">
-                    <label>${day}</label>
-                    <input type="text" id="adminTime_${day}" value="${lessonsText}">
-                </div>
-            `;
-        }
-    }
-
-    async function saveNewTimetable() {
-        let newTimetable = {};
-        for(let day in timetable) {
-            let inputVal = document.getElementById(`adminTime_${day}`).value;
-            newTimetable[day] = inputVal.split(',').map(x => x.trim().toUpperCase()).filter(x => x !== '');
-        }
-        
-        let { data } = await supabaseClient.from('diary_config').select('*').single();
-        if(data) {
-            await supabaseClient.from('diary_config').update({ timetable: newTimetable }).eq('id', data.id);
-        } else {
-            await supabaseClient.from('diary_config').insert([{ timetable: newTimetable }]);
-        }
-        
-        alert("Новое расписание синхронизировано!");
-        await loadOnlineConfig();
+        alert("Оценки сохранены!"); loadOnlineConfig();
     }
 </script>
 </body>

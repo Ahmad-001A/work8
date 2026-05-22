@@ -1,1 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 Панель Управления Дневником</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #090514 100%);
+            --glass: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.35);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
 
+        .admin-panel { width: 100%; max-width: 1300px; background: var(--glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 28px; min-height: 750px; display: flex; flex-direction: column; overflow: hidden; }
+        .dashboard { display: grid; grid-template-columns: 320px 1fr; min-height: 750px; flex: 1; }
+        .sidebar { border-right: 1px solid var(--glass-border); padding: 35px; display: flex; flex-direction: column; background: rgba(0,0,0,0.25); }
+        .main-content { padding: 40px; overflow-y: auto; }
+
+        .logo-area { margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 25px; }
+        .logo-area h3 { font-size: 22px; font-weight: 800; color: var(--accent); }
+
+        .nav-tabs { display: flex; flex-direction: column; gap: 10px; }
+        .nav-tab { padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .nav-tab.active { background: var(--accent); color: #000; font-weight: 700; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .input-group input { width: 100%; padding: 14px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-size: 15px; outline: none; }
+
+        .action-btn { width: 100%; padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; border: 1px solid var(--glass-border); }
+        .admin-table th, .admin-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .admin-table th { background: rgba(255,255,255,0.04); color: var(--accent); }
+
+        .danger-btn { padding: 8px 16px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; cursor: pointer; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .color-picker-row { display: grid; grid-template-columns: 1fr 80px; gap: 15px; align-items: center; }
+        .color-picker-row input[type="color"] { padding: 0; height: 48px; cursor: pointer; border-radius: 8px; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="admin-panel" id="adminContainer">
+    <div id="adminAuthBlock" style="max-width: 440px; margin: auto; width: 100%; background: rgba(2, 6, 23, 0.7); padding: 40px; border-radius: 24px; border: 1px solid var(--glass-border);">
+        <h2 style="text-align:center; margin-bottom:25px; color:var(--accent);">Вход в Панель</h2>
+        <div class="input-group">
+            <label>Логин Администратора</label>
+            <input type="text" id="admUser" placeholder="Admin">
+        </div>
+        <div class="input-group">
+            <label>Пароль</label>
+            <input type="password" id="admPass" placeholder="••••••••">
+        </div>
+        <button class="action-btn" onclick="checkAdminAuth()">Войти в Панель</button>
+    </div>
+
+    <div id="adminDashboardBlock" class="dashboard" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-area">
+                <h3>👑 Модуль Админа</h3>
+                <p>Управление из под папки /admin/</p>
+            </div>
+            <div class="nav-tabs">
+                <div class="nav-tab active" id="btnSite" onclick="switchTab('site')">🎨 Дизайн и сайт в онлайне</div>
+                <div class="nav-tab" id="btnTime" onclick="switchTab('time')">⚙️ Расписание занятий</div>
+                <div class="nav-tab" id="btnUsers" onclick="switchTab('users')">👥 База аккаунтов</div>
+            </div>
+            <button class="danger-btn" style="margin-top:auto; padding:12px;" onclick="location.reload()">Выйти из панели</button>
+        </aside>
+
+        <main class="main-content">
+            <div id="tabSite" class="tab-content active">
+                <h2 style="margin-bottom:20px; color:var(--accent);">Онлайн Конструктор Интерфейса</h2>
+                <div class="input-group">
+                    <label>Название сайта</label>
+                    <input type="text" id="siteTitleInput">
+                </div>
+                <div class="input-group color-picker-row">
+                    <div>
+                        <label>Цвет кнопок (HEX)</label>
+                        <input type="text" id="siteAccentText">
+                    </div>
+                    <input type="color" id="siteAccentColor" oninput="document.getElementById('siteAccentText').value = this.value">
+                </div>
+                <div class="input-group">
+                    <label>Фон сайта (CSS)</label>
+                    <input type="text" id="siteBgInput">
+                </div>
+                <div class="input-group">
+                    <label>Объявление сверху</label>
+                    <input type="text" id="siteNoticeInput">
+                </div>
+                <button class="action-btn" style="background:var(--success); color:white;" onclick="saveDesign()">⚡ Сохранить и применить на лету</button>
+            </div>
+
+            <div id="tabTime" class="tab-content">
+                <h2 style="margin-bottom:20px; color:var(--accent);">Редактирование расписания уроков</h2>
+                <div id="timetableFormContainer"></div>
+                <button class="action-btn" style="background:var(--success); color:white; margin-top:15px;" onclick="saveTimetable()">⚡ Обновить расписание</button>
+            </div>
+
+            <div id="tabUsers" class="tab-content">
+                <h2 style="margin-bottom:20px; color:var(--accent);">Пользователи системы</h2>
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Имя</th><th>Роль</th><th>Предмет</th><th>Пароль</th><th>Действие</th></tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://kyfnpsnnymhyapktyulf.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_YOncKyjzNTiiKkCzdWbEBg_dJylOA-9";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let timetable = {};
+    let allUsers = [];
+
+    function checkAdminAuth() {
+        const u = document.getElementById('admUser').value.trim();
+        const p = document.getElementById('admPass').value.trim();
+        if(u === "Admin" && p === "perpendos") {
+            document.getElementById('adminAuthBlock').style.display = 'none';
+            document.getElementById('adminDashboardBlock').style.display = 'grid';
+            loadData();
+        } else {
+            alert("Доступ заблокирован: Неверные данные администратора!");
+        }
+    }
+
+    async function loadData() {
+        let { data: config } = await supabaseClient.from('diary_config').select('*').single();
+        if(config) {
+            timetable = config.timetable || {};
+            document.getElementById('siteTitleInput').value = config.site_title || '';
+            document.getElementById('siteAccentText').value = config.site_accent || '';
+            document.getElementById('siteAccentColor').value = config.site_accent || '#6366f1';
+            document.getElementById('siteBgInput').value = config.site_bg || '';
+            document.getElementById('siteNoticeInput').value = config.site_notice || '';
+        }
+        let { data: users } = await supabaseClient.from('diary_users').select('*');
+        if(users) allUsers = users;
+
+        renderTimetable();
+        renderUsers();
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        if(t === 'site') { document.getElementById('btnSite').classList.add('active'); document.getElementById('tabSite').classList.add('active'); }
+        if(t === 'time') { document.getElementById('btnTime').classList.add('active'); document.getElementById('tabTime').classList.add('active'); }
+        if(t === 'users') { document.getElementById('btnUsers').classList.add('active'); document.getElementById('tabUsers').classList.add('active'); }
+    }
+
+    async function saveDesign() {
+        let { data } = await supabaseClient.from('diary_config').select('*').single();
+        let payload = {
+            site_title: document.getElementById('siteTitleInput').value.trim(),
+            site_accent: document.getElementById('siteAccentText').value.trim(),
+            site_bg: document.getElementById('siteBgInput').value.trim(),
+            site_notice: document.getElementById('siteNoticeInput').value.trim()
+        };
+        if(data) { await supabaseClient.from('diary_config').update(payload).eq('id', data.id); }
+        else { payload.timetable = timetable; await supabaseClient.from('diary_config').insert([payload]); }
+        alert("Изменения структуры дизайна применены!"); loadData();
+    }
+
+    function renderTimetable() {
+        let c = document.getElementById('timetableFormContainer'); c.innerHTML = '';
+        for(let day in timetable) {
+            c.innerHTML += `<div class="input-group"><label>${day}</label><input type="text" id="inp_${day}" value="${timetable[day].join(', ')}"></div>`;
+        }
+    }
+
+    async function saveTimetable() {
+        let newT = {};
+        for(let day in timetable) {
+            newT[day] = document.getElementById(`inp_${day}`).value.split(',').map(x => x.trim().toUpperCase()).filter(x => x !== '');
+        }
+        let { data } = await supabaseClient.from('diary_config').select('*').single();
+        await supabaseClient.from('diary_config').update({ timetable: newT }).eq('id', data.id);
+        alert("Расписание обновлено!"); loadData();
+    }
+
+    function renderUsers() {
+        let b = document.getElementById('usersTableBody'); b.innerHTML = '';
+        allUsers.forEach(u => {
+            b.innerHTML += `<tr><td><b>${u.name}</b></td><td>${u.role}</td><td>${u.subject || '—'}</td><td><code>${u.pass}</code></td><td><button class="danger-btn" onclick="deleteUser(${u.id})">Удалить</button></td></tr>`;
+        });
+    }
+
+    async function deleteUser(id) {
+        if(confirm("Удалить?")) { await supabaseClient.from('diary_users').delete().eq('id', id); loadData(); }
+    }
+</script>
+</body>
+</html>

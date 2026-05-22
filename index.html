@@ -8,21 +8,22 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg: radial-gradient(circle at 50% 50%, #111827 0%, #030712 100%);
-            --glass: rgba(17, 24, 39, 0.7);
+            --bg: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+            --glass: rgba(15, 23, 42, 0.65);
             --glass-border: rgba(255, 255, 255, 0.08);
             --accent: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.3);
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             --danger: #ef4444;
             --danger-glow: rgba(239, 68, 68, 0.3);
             --success: #10b981;
+            --warning: #f59e0b;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; cubic-bezier: (0.4, 0, 0.2, 1); }
 
         .glass-panel {
             width: 100%;
@@ -41,109 +42,118 @@
         }
 
         .screen { display: none; padding: 40px; flex-direction: column; flex: 1; }
-        .screen.active { display: flex; animation: slideUp 0.4s ease-out; }
+        .screen.active { display: flex; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
         /* Форма входа */
         .auth-wrapper {
-            max-width: 420px;
+            max-width: 440px;
             margin: auto;
             width: 100%;
-            background: rgba(3, 7, 18, 0.6);
+            background: rgba(2, 6, 23, 0.7);
             padding: 40px;
-            border-radius: 20px;
+            border-radius: 24px;
             border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
-        .auth-wrapper h2 { font-size: 30px; font-weight: 800; text-align: center; margin-bottom: 25px; background: linear-gradient(to right, #fff, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-wrapper h2 { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 25px; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .tabs { display: flex; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 12px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; border-radius: 8px; transition: 0.2s; }
-        .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 0 12px var(--accent-glow); }
+        .tabs { display: flex; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 14px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.02); }
+        .tab-btn { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; border-radius: 10px; transition: all 0.25s ease; font-size: 14px; }
+        .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px var(--accent-glow); }
 
-        .input-group { margin-bottom: 18px; }
-        .input-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: white; font-size: 15px; outline: none; }
-        .input-group textarea { resize: none; height: 80px; font-size: 14px; }
-        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 14px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-size: 15px; outline: none; transition: all 0.2s; }
+        .input-group textarea { resize: none; height: 90px; font-size: 14px; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
 
-        .action-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .action-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 15px var(--accent-glow); }
-        .toggle-auth { text-align: center; margin-top: 15px; font-size: 13px; color: var(--text-muted); cursor: pointer; text-decoration: underline; }
+        .action-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
+        .action-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+        .action-btn:active { transform: translateY(1px); }
+        .toggle-auth { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .toggle-auth:hover { color: white; text-decoration: underline; }
 
         /* Рабочее пространство */
-        .dashboard { display: grid; grid-template-columns: 280px 1fr; min-height: 750px; flex: 1; }
-        .sidebar { border-right: 1px solid var(--glass-border); padding: 30px; display: flex; flex-direction: column; background: rgba(0,0,0,0.1); }
-        .main-content { padding: 40px; overflow-y: auto; }
+        .dashboard { display: grid; grid-template-columns: 300px 1fr; min-height: 750px; flex: 1; }
+        .sidebar { border-right: 1px solid var(--glass-border); padding: 35px; display: flex; flex-direction: column; background: rgba(0,0,0,0.15); }
+        .main-content { padding: 40px; overflow-y: auto; background: rgba(255,255,255,0.01); }
 
-        .user-card { margin-bottom: 25px; border-bottom: 1px solid var(--glass-border); padding-bottom: 20px; }
-        .user-card h3 { font-size: 18px; font-weight: 700; }
-        .user-card p { font-size: 13px; color: var(--accent); margin-top: 2px; }
+        .user-card { margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 25px; }
+        .user-card h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .user-card p { font-size: 13px; color: var(--accent); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
         .content-nav-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-        .nav-tab { padding: 12px 18px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; text-align: left; transition: 0.2s; }
-        .nav-tab:hover { background: rgba(255,255,255,0.08); color: white; }
-        .nav-tab.active { background: var(--accent); color: white; border-color: transparent; box-shadow: 0 4px 12px var(--accent-glow); }
+        .nav-tab { padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px; }
+        .nav-tab:hover { background: rgba(255,255,255,0.06); color: white; }
+        .nav-tab.active { background: var(--accent); color: white; border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
 
-        .teacher-remark-panel { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.15); padding: 20px; border-radius: 16px; margin-bottom: 30px; }
-        .teacher-remark-panel h4 { font-size: 15px; color: var(--danger); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .teacher-remark-panel { background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); padding: 25px; border-radius: 20px; margin-bottom: 35px; backdrop-filter: blur(10px); }
+        .teacher-remark-panel h4 { font-size: 16px; color: var(--danger); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
 
-        .week-navigation { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 15px 25px; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--glass-border); }
-        .nav-arrow { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        .nav-arrow:hover { background: #4338ca; }
-        .week-title { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+        .week-navigation { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 18px 28px; border-radius: 20px; margin-bottom: 30px; border: 1px solid var(--glass-border); }
+        .nav-arrow { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        .nav-arrow:hover { background: var(--accent); border-color: transparent; box-shadow: 0 4px 12px var(--accent-glow); }
+        .week-title { font-size: 17px; font-weight: 700; letter-spacing: 0.5px; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         /* Расписание */
-        .day-block { background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; margin-bottom: 20px; position: relative; }
-        .day-header { font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .day-block { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; margin-bottom: 25px; position: relative; transition: border-color 0.3s; }
+        .day-block:hover { border-color: rgba(99, 102, 241, 0.2); }
+        .day-header { font-size: 18px; font-weight: 800; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         
-        .row-lesson { display: grid; grid-template-columns: 40px 240px 1fr; align-items: center; padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,0.03); }
-        .lesson-num { color: var(--text-muted); font-weight: 600; font-size: 14px; }
-        .lesson-name { font-weight: 600; font-size: 14px; letter-spacing: 0.5px; padding-right: 10px; }
+        .row-lesson { display: grid; grid-template-columns: 50px 280px 1fr; align-items: center; padding: 14px 0; border-bottom: 1px dashed rgba(255,255,255,0.04); }
+        .row-lesson:last-child { border-bottom: none; }
+        .lesson-num { color: var(--text-muted); font-weight: 700; font-size: 14px; }
+        .lesson-name { font-weight: 600; font-size: 15px; letter-spacing: 0.3px; padding-right: 15px; }
 
-        .grades-container { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .grades-container { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         
-        .grade-view-badge { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: 700; font-size: 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); }
-        .badge-high { background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.3); } 
-        .badge-good { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); } 
-        .badge-mid { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); }  
-        .badge-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }  
+        /* Цвета 10-балльной системы */
+        .grade-view-badge { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 800; font-size: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); transition: transform 0.2s; }
+        .grade-view-badge:hover { transform: scale(1.08); }
+        .badge-excellent { background: rgba(16, 185, 129, 0.18); color: #10b981; border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 0 10px rgba(16, 185, 129, 0.1); } 
+        .badge-good { background: rgba(59, 130, 246, 0.18); color: #3b82f6; border-color: rgba(59, 130, 246, 0.35); } 
+        .badge-satisfactory { background: rgba(245, 158, 11, 0.18); color: #f59e0b; border-color: rgba(245, 158, 11, 0.35); }  
+        .badge-unsatisfactory { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }  
+        .badge-critical { background: rgba(220, 38, 38, 0.3); color: #f87171; border-color: #dc2626; animation: shake 0.5s ease-in-out infinite alternate; }
 
-        .teacher-selector-wrapper { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 6px 14px; border-radius: 10px; border: 1px solid var(--glass-border); }
-        .student-select-dropdown { background: #111827; color: white; border: 1px solid var(--glass-border); padding: 6px 12px; border-radius: 6px; font-size: 14px; outline: none; min-width: 200px; }
-        .grade-input-field { width: 55px; height: 32px; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border); border-radius: 6px; color: white; text-align: center; font-weight: 700; font-size: 15px; outline: none; }
-        .grade-input-field:focus { border-color: var(--accent); background: rgba(255,255,255,0.15); }
+        .teacher-selector-wrapper { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .student-select-dropdown { background: #0f172a; color: white; border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 8px; font-size: 14px; outline: none; min-width: 220px; }
+        .grade-input-field { width: 60px; height: 36px; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 8px; color: white; text-align: center; font-weight: 800; font-size: 15px; outline: none; transition: all 0.15s; }
+        .grade-input-field:focus { border-color: var(--accent); background: rgba(255,255,255,0.12); box-shadow: 0 0 8px var(--accent-glow); }
         
-        .remark-item { background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.15); border-left: 4px solid var(--danger); padding: 20px; border-radius: 12px; margin-bottom: 15px; position: relative;}
+        .remark-item { background: rgba(239,68,68,0.02); border: 1px solid rgba(239,68,68,0.12); border-left: 4px solid var(--danger); padding: 20px; border-radius: 14px; margin-bottom: 18px; }
         .remark-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
         .remark-sender { color: var(--danger); font-weight: 700; }
         .remark-text { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--text-main); }
 
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); }
-        .admin-table th, .admin-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid var(--glass-border); }
-        .admin-table th { background: rgba(255,255,255,0.05); font-weight: 700; color: var(--accent); }
-        .danger-btn { padding: 6px 14px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .danger-btn:hover { background: #ef4444; color: white; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 25px; background: rgba(255,255,255,0.01); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border); }
+        .admin-table th, .admin-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .admin-table th { background: rgba(255,255,255,0.04); font-weight: 700; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .danger-btn { padding: 8px 16px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .danger-btn:hover { background: #ef4444; color: white; border-color: transparent; box-shadow: 0 4px 12px var(--danger-glow); }
 
-        .alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .alert-overlay.show { opacity: 1; pointer-events: auto; }
-        .alert-modal { background: #1e1b4b; border: 2px solid var(--danger); box-shadow: 0 0 40px var(--danger-glow); width: 100%; max-width: 550px; padding: 35px; border-radius: 24px; text-align: center; transform: scale(0.9); transition: transform 0.3s ease; }
+        .alert-modal { background: #1e1b4b; border: 2px solid var(--danger); box-shadow: 0 0 50px rgba(239, 68, 68, 0.25); width: 100%; max-width: 550px; padding: 40px; border-radius: 28px; text-align: center; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .alert-overlay.show .alert-modal { transform: scale(1); }
         
-        .alert-icon { width: 64px; height: 64px; background: rgba(239,68,68,0.2); color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; margin: 0 auto 20px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 15px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+        .alert-icon { width: 68px; height: 68px; background: rgba(239,68,68,0.15); color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 800; margin: 0 auto 22px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 18px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
         
-        .alert-modal h3 { font-size: 24px; font-weight: 800; color: white; margin-bottom: 10px; }
-        .alert-modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
-        .alert-scroll-box { max-height: 240px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; }
-        .alert-inner-item { border-bottom: 1px dashed rgba(239,68,68,0.2); padding-bottom: 10px; margin-bottom: 10px; }
+        .alert-modal h3 { font-size: 26px; font-weight: 800; color: white; margin-bottom: 12px; }
+        .alert-modal p { color: var(--text-muted); font-size: 15px; margin-bottom: 22px; }
+        .alert-scroll-box { max-height: 240px; overflow-y: auto; text-align: left; background: rgba(0,0,0,0.4); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; }
+        .alert-inner-item { border-bottom: 1px dashed rgba(239,68,68,0.2); padding-bottom: 12px; margin-bottom: 12px; }
+        .alert-inner-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
-        .logout-btn { padding: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: auto; transition: 0.2s; }
-        .logout-btn:hover { background: #ef4444; color: white; }
+        .logout-btn { padding: 12px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: auto; transition: all 0.2s; text-align: center; }
+        .logout-btn:hover { background: #ef4444; color: white; border-color: transparent; box-shadow: 0 4px 12px var(--danger-glow); }
     </style>
 </head>
 <body>
@@ -208,7 +218,7 @@
                         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 15px;">
                             <div class="input-group" style="margin:0;">
                                 <label>Кому оставить замечание?</label>
-                                <select id="remarkStudentTarget" class="student-select-dropdown" style="width:100%; height:45px;"></select>
+                                <select id="remarkStudentTarget" class="student-select-dropdown" style="width:100%; height:48px;"></select>
                             </div>
                             <div class="input-group" style="margin:0;">
                                 <label>Текст замечания</label>
@@ -229,7 +239,7 @@
                     <div id="diaryDaysContainer"></div>
 
                     <div id="saveBlock" style="margin-top: 25px; text-align: right; display: none;">
-                        <button class="action-btn" style="width: auto; padding: 15px 40px;" onclick="saveGradesData()">💾 Сохранить оценки</button>
+                        <button class="action-btn" style="width: auto; padding: 15px 40px; background: var(--success);" onclick="saveGradesData()">💾 Сохранить оценки</button>
                     </div>
                 </div>
 
@@ -271,10 +281,16 @@
     const SUPABASE_KEY = "sb_publishable_YOncKyjzNTiiKkCzdWbEBg_dJylOA-9";
     // ===========================================
 
-    // Инициализация клиента Supabase
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let timetable = {}; 
+    let timetable = {
+        "Понедельник": ["ФИЗИКА", "ОБЩАЯ ИСТОРИЯ", "ХИМИЯ", "АЛГЕБРА", "ГОСС-ЯЗ", "ИСТОРИЯ ТАДЖИКСКОГО НАРОДА"],
+        "Вторник": ["БИОЛОГИЯ", "АНГЛ-ЯЗ", "ГЕОМЕТРИЯ", "АЛГЕБРА", "ФИЗРА"],
+        "Среда": ["ГЕОМЕТРИЯ", "ФИЗИКА ОБЩАЯ", "АНГЛ-ЯЗ", "РУСС-ЯЗ", "ЛИТ-РА", "ГЕОГРАФИЯ"],
+        "Четверг": ["ИСТОРИЯ", "КЛ-ЧАС", "РУСС-ЯЗ", "ГОСС-ПРАВО", "ОБЖ", "ГОСС-ЯЗ"],
+        "Пятница": ["ИКТ", "БИОЛОГИЯ", "РУСС-ЯЗ", "ФИЗРА", "ЛИТ-РА", "ГЕОГРАФИЯ"],
+        "Суббота": ["ХИМИЯ", "ЧЕРЧЕНИЕ", "ГОСС-ЯЗ"]
+    }; 
     let allUsers = [];
     let globalGrades = {};
     let allRemarks = [];
@@ -284,7 +300,38 @@
     let currentWeekIndex = 0;
     let teacherSelectedStudent = ""; 
 
-    // Загрузка глобальной конфигурации из онлайн-БД
+    // Свежий список уникальных предметов на основе встроенного массива расписания
+    function getUniqueSubjectsFromTimetable() {
+        const unique = [];
+        for(let day in timetable) {
+            timetable[day].forEach(sub => {
+                if(!unique.includes(sub)) unique.push(sub);
+            });
+        }
+        return unique.sort();
+    }
+
+    // Инициализация обработчиков нажатия клавиши Enter
+    document.addEventListener("DOMContentLoaded", () => {
+        // Логин по Enter
+        const authFields = ['authName', 'authPass'];
+        authFields.forEach(id => {
+            document.getElementById(id).addEventListener("keydown", (e) => {
+                if (e.key === "Enter") { processAuth(); }
+            });
+        });
+
+        // Замечание учителя по Enter
+        document.getElementById('remarkText').addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendRemark();
+            }
+        });
+        
+        loadOnlineConfig();
+    });
+
     async function loadOnlineConfig() {
         let { data: config } = await supabaseClient.from('diary_config').select('timetable').single();
         if (config) timetable = config.timetable;
@@ -301,14 +348,16 @@
         let { data: remarks } = await supabaseClient.from('diary_remarks').select('*');
         if (remarks) allRemarks = remarks;
 
-        const uniqueSubjects = ["ФИЗИКА ОБЩАЯ","АЛГЕБРА","БИОЛОГИЯ","ФИЗРА","РУСС-ЯЗ","ОБЖ","ИКТ","ХИМИЯ","ГЕОГРАФИЯ","ИСТОРИЯ","ЛИТЕРАТУРА"];
+        const uniqueSubjects = getUniqueSubjectsFromTimetable();
         const subSelect = document.getElementById('authSubject');
         if (subSelect) {
             subSelect.innerHTML = '';
-            uniqueSubjects.sort().forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+            uniqueSubjects.forEach(s => { subSelect.innerHTML += `<option value="${s}">${s}</option>`; });
         }
         
-        if(currentUser) renderWeekDiary();
+        if(currentUser) {
+            renderWeekDiary();
+        }
     }
 
     function generateAcademicWeeks() {
@@ -335,7 +384,7 @@
         currentRole = role;
         document.getElementById('roleStudent').classList.toggle('active', role === 'student');
         document.getElementById('roleTeacher').classList.toggle('active', role === 'teacher');
-        document.getElementById('subjectBlock').style.display = (role === 'teacher' && isRegisterMode) ? 'block' : 'none';
+        document.getElementById('subjectBlock').style.display = (role === 'teacher') ? 'block' : 'none';
     }
 
     function toggleMode() {
@@ -423,20 +472,155 @@
 
     function logout() { currentUser = null; document.getElementById('dashboardScreen').classList.remove('active'); document.getElementById('authScreen').classList.add('active'); }
 
+    // Возвращает CSS класс бэйджа в зависимости от оценки по 10-балльной системе
+    function getGradeClass10(gradeStr) {
+        const val = parseFloat(gradeStr);
+        if (isNaN(val)) return '';
+        if (val >= 9) return 'badge-excellent';      // 9, 10
+        if (val >= 7) return 'badge-good';           // 7, 8
+        if (val >= 5) return 'badge-satisfactory';   // 5, 6
+        if (val >= 3) return 'badge-unsatisfactory'; // 3, 4
+        return 'badge-critical';                     // 1, 2
+    }
+
+    function renderWeekDiary() {
+        const week = academicWeeks[currentWeekIndex];
+        document.getElementById('weekRangeTitle').innerText = `Неделя ${week.id + 1} (${week.startStr} — ${week.endStr})`;
+        const container = document.getElementById('diaryDaysContainer');
+        container.innerHTML = '';
+
+        // Если зашел учитель, добавим селектор выбора ученика сверху расписания
+        if(currentUser.role === 'teacher') {
+            let selectHTML = `
+                <div class="teacher-selector-wrapper" style="margin-bottom: 20px;">
+                    <label style="font-weight:700;">Выбор ученика для выставления оценок:</label>
+                    <select class="student-select-dropdown" id="diaryStudentTarget" onchange="selectStudentForTeacher(this.value)">
+                        <option value="">-- Выберите из списка --</option>
+            `;
+            allUsers.filter(u => u.role === 'student').forEach(st => {
+                let selected = (st.name === teacherSelectedStudent) ? 'selected' : '';
+                selectHTML += `<option value="${st.name}" ${selected}>${st.name}</option>`;
+            });
+            selectHTML += `</select></div>`;
+            container.innerHTML += selectHTML;
+        }
+
+        // Рендеринг дней недели
+        for(let day in timetable) {
+            let dayDate = new Date(week.daysDates[day]).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
+            let dayBlock = document.createElement('div');
+            dayBlock.className = 'day-block';
+            
+            let html = `<div class="day-header"><span>${day}</span><span style="font-size:13px; color:var(--text-muted);">${dayDate}</span></div>`;
+            
+            timetable[day].forEach((lesson, index) => {
+                let lessonNum = index + 1;
+                let targetUser = (currentUser.role === 'teacher') ? teacherSelectedStudent : currentUser.name;
+                
+                let lessonKey = `w${week.id}_${day}_L${lessonNum}_${lesson}`;
+                let currentGrades = (globalGrades[lessonKey] && globalGrades[lessonKey][targetUser]) ? globalGrades[lessonKey][targetUser] : [];
+
+                let gradesHTML = `<div class="grades-container">`;
+                if(currentUser.role === 'teacher') {
+                    // Если учитель ведет этот предмет, открываем ввод
+                    if(currentUser.subject === lesson && teacherSelectedStudent) {
+                        let currentValues = currentGrades.join(', ');
+                        gradesHTML += `<input type="text" class="grade-input-field" data-key="${lessonKey}" value="${currentValues}" placeholder="1-10" title="Вводите оценки через запятую">`;
+                    } else {
+                        // Просто просмотр для учителя чужих предметов
+                        currentGrades.forEach(g => {
+                            gradesHTML += `<span class="grade-view-badge ${getGradeClass10(g)}">${g}</span>`;
+                        });
+                    }
+                } else if(currentUser.role === 'student') {
+                    // Обычный вид для ученика
+                    currentGrades.forEach(g => {
+                        gradesHTML += `<span class="grade-view-badge ${getGradeClass10(g)}">${g}</span>`;
+                    });
+                }
+                gradesHTML += `</div>`;
+
+                html += `
+                    <div class="row-lesson">
+                        <div class="lesson-num">${lessonNum}</div>
+                        <div class="lesson-name">${lesson}</div>
+                        ${gradesHTML}
+                    </div>
+                `;
+            });
+            
+            dayBlock.innerHTML = html;
+            container.appendChild(dayBlock);
+        }
+
+        // Привязываем сохранение по Enter во всех инпутах оценок
+        if(currentUser.role === 'teacher') {
+            document.querySelectorAll('.grade-input-field').forEach(input => {
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") { saveGradesData(); }
+                });
+            });
+        }
+    }
+
+    function selectStudentForTeacher(name) {
+        teacherSelectedStudent = name;
+        renderWeekDiary();
+    }
+
+    function changeWeek(dir) {
+        let nextIdx = currentWeekIndex + dir;
+        if(nextIdx >= 0 && nextIdx < academicWeeks.length) {
+            currentWeekIndex = nextIdx;
+            renderWeekDiary();
+        }
+    }
+
+    async function saveGradesData() {
+        if(!teacherSelectedStudent) return alert("Выберите ученика перед сохранением!");
+        const inputs = document.querySelectorAll('.grade-input-field');
+        
+        for(let input of inputs) {
+            let key = input.dataset.key;
+            let val = input.value.trim();
+            
+            // Преобразуем строку в массив десятичных оценок от 1 до 10
+            let gradesArr = val.split(',')
+                               .map(s => s.trim())
+                               .filter(s => s !== "")
+                               .map(s => {
+                                   let parsed = parseInt(s, 10);
+                                   return (parsed >= 1 && parsed <= 10) ? parsed : null;
+                               })
+                               .filter(g => g !== null);
+
+            if(!globalGrades[key]) globalGrades[key] = {};
+            globalGrades[key][teacherSelectedStudent] = gradesArr;
+
+            // Отправляем запись в Supabase синхронно для каждого измененного инпута
+            let { data } = await supabaseClient.from('diary_grades').select('*').eq('lesson_key', key).single();
+            if(data) {
+                await supabaseClient.from('diary_grades').update({ grades_data: globalGrades[key] }).eq('lesson_key', key);
+            } else {
+                await supabaseClient.from('diary_grades').insert([{ lesson_key: key, grades_data: globalGrades[key] }]);
+            }
+        }
+        alert("Оценки по 10-балльной системе успешно сохранены онлайн!");
+        loadOnlineConfig();
+    }
+
     function renderAdminUsersPanel() {
         const tbody = document.getElementById('adminUsersTableBody');
         tbody.innerHTML = '';
-
         allUsers.forEach((user) => {
             if(user.role === 'admin') return;
-            
             tbody.innerHTML += `
                 <tr>
                     <td><strong>${user.name}</strong></td>
                     <td>${user.role === 'teacher' ? '💼 Учитель' : '🎒 Ученик'}</td>
                     <td>${user.subject ? user.subject : '—'}</td>
                     <td>
-                        <input type="text" value="${user.pass}" style="width:120px; padding:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; border-radius:6px;" onchange="changeUserPassword('${user.id}', this.value)">
+                        <input type="text" id="pass_user_${user.id}" value="${user.pass}" style="width:120px; padding:6px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; border-radius:6px;">
                     </td>
                     <td>
                         <button class="danger-btn" onclick="deleteUser('${user.id}')">Удалить</button>
@@ -444,17 +628,25 @@
                 </tr>
             `;
         });
+
+        // Поддержка Enter для изменения паролей в админке
+        allUsers.forEach((user) => {
+            if(user.role === 'admin') return;
+            document.getElementById(`pass_user_${user.id}`).addEventListener("keydown", (e) => {
+                if(e.key === "Enter") { changeUserPassword(user.id, e.target.value); }
+            });
+        });
     }
 
     async function changeUserPassword(id, newPass) {
-        if(!newPass.trim()) return alert("Пароль не пустой!");
+        if(!newPass.trim()) return alert("Пароль не должен быть пустым!");
         await supabaseClient.from('diary_users').update({ pass: newPass.trim() }).eq('id', id);
-        alert("Пароль обновлен глобально!");
+        alert("Пароль обновлен в единой базе данных!");
         loadOnlineConfig();
     }
 
     async function deleteUser(id) {
-        if(confirm("Удалить пользователя?")) {
+        if(confirm("Удалить пользователя из системы навсегда?")) {
             await supabaseClient.from('diary_users').delete().eq('id', id);
             await loadOnlineConfig();
             renderAdminUsersPanel();
@@ -472,6 +664,12 @@
                 </div>
             `;
         }
+
+        for(let day in timetable) {
+            document.getElementById(`edit_day_${day}`).addEventListener("keydown", (e) => {
+                if(e.key === "Enter") { saveNewTimetable(); }
+            });
+        }
     }
 
     async function saveNewTimetable() {
@@ -480,80 +678,94 @@
             timetable[day] = val.split(',').map(s => s.trim()).filter(s => s !== "");
         }
         await supabaseClient.from('diary_config').update({ timetable: timetable }).eq('id', 1);
-        alert("Расписание обновлено на всех устройствах!");
-        renderWeekDiary();
+        alert("Глобальное расписание успешно перестроено!");
+        loadOnlineConfig();
     }
 
     async function sendRemark() {
         const targetStudent = document.getElementById('remarkStudentTarget').value;
         const text = document.getElementById('remarkText').value.trim();
-        if(!targetStudent || !text) return alert("Заполните поля!");
+        if(!targetStudent || !text) return alert("Выберите ученика и напишите текст!");
         const now = new Date();
         
         await supabaseClient.from('diary_remarks').insert([{
-            id: Date.now(), student_name: targetStudent, teacher_name: currentUser.name,
-            subject: currentUser.subject, text: text, date_str: `${now.toLocaleDateString('ru-RU')} в ${now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'})}`
+            student_name: targetStudent, teacher_name: currentUser.name,
+            subject: currentUser.subject, text: text, is_read: false,
+            date_str: `${now.toLocaleDateString('ru-RU')} в ${now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'})}`
         }]);
-        alert("Замечание отправлено!"); document.getElementById('remarkText').value = "";
+        alert("Дисциплинарное замечание доставлено!"); 
+        document.getElementById('remarkText').value = "";
         loadOnlineConfig();
     }
 
     async function checkUnreadRemarksForStudent() {
         let unread = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase() && !r.is_read);
         if(unread.length > 0) {
-            const box = document.getElementById('alertScrollBox'); box.innerHTML = '';
-            for (let r of unread) {
-                box.innerHTML += `<div class="alert-inner-item"><div style="font-size:12px; color:#f87171; font-weight:700;">От: ${r.teacher_name} (${r.subject}) • ${r.date_str}</div><div style="color:#fff; margin-top:5px;">«${r.text}»</div></div>`;
-                await supabaseClient.from('diary_remarks').update({ is_read: true }).eq('id', r.id);
-            }
+            const box = document.getElementById('alertScrollBox');
+            box.innerHTML = '';
+            unread.forEach(r => {
+                box.innerHTML += `
+                    <div class="alert-inner-item">
+                        <div style="font-size:12px; color:var(--danger); font-weight:700; margin-bottom:4px;">${r.subject} — ${r.teacher_name} (${r.date_str})</div>
+                        <div style="font-size:14px; color:white;">${r.text}</div>
+                    </div>
+                `;
+            });
             document.getElementById('remarkAlertOverlay').classList.add('show');
-            loadOnlineConfig();
         }
     }
 
-    function closeRemarkAlert() { document.getElementById('remarkAlertOverlay').classList.remove('show'); }
-    
+    async function closeRemarkAlert() {
+        document.getElementById('remarkAlertOverlay').classList.remove('show');
+        let unread = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase() && !r.is_read);
+        for(let r of unread) {
+            await supabaseClient.from('diary_remarks').update({ is_read: true }).eq('id', r.id);
+        }
+        loadOnlineConfig();
+    }
+
     function updateRemarkBadgeCount() {
         const badge = document.getElementById('remarkCountBadge');
-        if(currentUser && currentUser.role === 'student') {
-            let cnt = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase()).length;
-            if(cnt > 0) { badge.innerText = cnt; badge.style.display = 'inline-block'; return; }
+        if(!currentUser) return;
+        let count = 0;
+        if(currentUser.role === 'student') {
+            count = allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase()).length;
+        } else {
+            count = allRemarks.length;
         }
-        badge.style.display = 'none';
+        if(count > 0) {
+            badge.innerText = count;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
     }
 
     function renderRemarksArchive() {
-        const container = document.getElementById('remarksListContainer'); container.innerHTML = '';
-        let filtered = currentUser.role === 'student' ? allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase()) : allRemarks;
-        if(filtered.length === 0) { container.innerHTML = `<div style="color:var(--text-muted); text-align:center; padding:40px;">Замечаний нет!</div>`; return; }
-        filtered.slice().reverse().forEach(r => {
-            container.innerHTML += `<div class="remark-item"><div class="remark-meta"><div>Кому: <strong>${r.student_name}</strong></div><div class="remark-sender">От: ${r.teacher_name}</div></div><div class="remark-text">« ${r.text} »</div><div style="font-size:11px; color:var(--text-muted); text-align:right; margin-top:10px;">📅 ${r.date_str}</div></div>`;
+        const container = document.getElementById('remarksListContainer');
+        container.innerHTML = '';
+        let filtered = (currentUser.role === 'student') ? 
+            allRemarks.filter(r => r.student_name.toLowerCase() === currentUser.name.toLowerCase()) : allRemarks;
+
+        if(filtered.length === 0) {
+            container.innerHTML = `<div style="color:var(--text-muted); text-align:center; padding:40px;">Замечаний в архиве не обнаружено. Прекрасная дисциплина!</div>`;
+            return;
+        }
+
+        filtered.sort((a,b) => b.id - a.id).forEach(r => {
+            container.innerHTML += `
+                <div class="remark-item">
+                    <div class="remark-meta">
+                        <span>Нарушитель: <strong style="color:white;">${r.student_name}</strong></span>
+                        <span>${r.date_str}</span>
+                    </div>
+                    <div class="remark-text">
+                        <span class="remark-sender">[${r.subject}] ${r.teacher_name}:</span> ${r.text}
+                    </div>
+                </div>
+            `;
         });
     }
-
-    function changeWeek(direction) { 
-        let newIdx = currentWeekIndex + direction; 
-        if(newIdx >= 0 && newIdx < academicWeeks.length) {
-            currentWeekIndex = newIdx;
-            renderWeekDiary();
-        }
-    }
-
-    // Заглушки для функций вывода дневника, чтобы не было ошибок при компиляции
-    function renderWeekDiary() {
-        const titleEl = document.getElementById('weekRangeTitle');
-        if (titleEl && academicWeeks[currentWeekIndex]) {
-            titleEl.innerText = `Неделя: ${academicWeeks[currentWeekIndex].startStr} — ${academicWeeks[currentWeekIndex].endStr}`;
-        }
-        // Здесь должна быть логика отрисовки дней (diaryDaysContainer)
-        console.log("Отрисовка недели с индексом:", currentWeekIndex);
-    }
-    function saveGradesData() { console.log("Сохранение оценок..."); }
-
-    // Автоматический запуск при загрузке страницы
-    window.onload = function() {
-        loadOnlineConfig();
-    };
 </script>
 </body>
 </html>
